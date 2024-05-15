@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16
+    restart: always
+    ports:
+      - 6879:6879
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Lehuutuan6879
+      POSTGRES_DB: real-estate #* database name
+volumes:
+  postgres:
+
+
