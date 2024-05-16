@@ -18,6 +18,7 @@ model User {
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 
+  userName String
   email         String    @unique
   emailVerified DateTime? 
   password      String
