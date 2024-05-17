@@ -2,6 +2,7 @@ import express from "express";
 import * as dotenv from "dotenv";
 import cors from "cors";
 import { registerRouter } from "./register/register.route";
+import { loginRouter } from "./login/login.route";
 
 dotenv.config();
 
@@ -20,7 +21,8 @@ app.listen(PORT, () => {
 });
 
 //todo: ROUTES API
-app.use("/api/auth/register", registerRouter);
+app.use("/api/auth", registerRouter);
+app.use("/api/auth", loginRouter);
 
 //todo: MIDDLEWARE
 app.use((err: any, req: any, res: any, next: any) => {

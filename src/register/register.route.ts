@@ -5,7 +5,7 @@ import { body } from "express-validator";
 export const registerRouter = express.Router();
 
 registerRouter.post(
-  "/",
+  "/register",
   body("userName").isString(),
   body("email").isString(),
   body("password").isString(),
