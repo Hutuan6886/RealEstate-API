@@ -1,18 +1,17 @@
-import { Request, Response } from "express";
+import { Request, Response, response } from "express";
 import { validationResult } from "express-validator";
 import { db } from "../utils/db.server";
 import * as LoginService from "./login.service";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 
 export const loginUser = async (
   request: Request,
-  Response: Response,
+  response: Response,
   next: any
 ) => {
   const validError = validationResult(request);
   if (!validError.isEmpty()) {
-    return Response.status(400).json(validError.array());
+    return response.status(400).json(validError.array());
   }
   const { email, password } = request.body;
   const existingUser = await db.user.findUnique({
@@ -34,22 +33,45 @@ export const loginUser = async (
     // return Response.status(400).json({ error: "JWT_SECRET is not available!" });
     return next({ statusCode: 400, message: "JWT_SECRET is not available!" });
   }
-  //todo: create jwt(json web token)
-  const token = jwt.sign({ id: existingUser.id }, process.env.JWT_SECRET); //* Create token with the id of user mix to JWT_SECRET (vì vậy từ token này, chúng ta có thể giải mã để lấy được id của user)
-  const { password: pass, ...infoEXistingUser } = existingUser; //* Cần xoá mật khẩu của user trước khi gửi thông tin user đó về browser
-  Response.cookie("access_token", token, {
-    //* Save this token at the cookie
-    httpOnly: true,
-    expires: new Date(new Date().getTime() + 5 * 60 * 1000), //* 5 minute
-  })
-    .status(200)
-    .json(infoEXistingUser); //* gửi thông tin trừ password của user về browser
-
   try {
-    // const user = await LoginService.getUser(request.body);
-    // return Response.status(200).json(user);
+    /* //todo: Không sử dụng service
+     const token = jwt.sign({ id: dataUser.id }, process.env.JWT_SECRET); //* Create token with the id of user mix to JWT_SECRET (vì vậy từ token này, chúng ta có thể giải mã để lấy được id của user)
+     const { password: pass, ...infoEXistingUser } = dataUser; //* Cần xoá mật khẩu của user trước khi gửi thông tin user đó về browser
+    */
+    const res = await LoginService.loginUser(existingUser);
+    return response
+      .cookie("access_token", res.token, {
+        //* Save this token at the cookie
+        httpOnly: true,
+        // expires: new Date(new Date().getTime() + 5 * 60 * 1000), //* 5 minute
+      })
+      .status(200)
+      .json(res.dataUser); //* gửi thông tin trừ password của user về browser
   } catch (error: any) {
     // return Response.status(500).json(error.message);
     return next(error);
+  }
+};
+
+export const loginGoogle = async (
+  request: Request,
+  response: Response,
+  next: any
+) => {
+  const validError = validationResult(request.body);
+  if (!validError.isEmpty()) {
+    next(validError.array());
+  }
+  try {
+    const res = await LoginService.googleUser(request.body);
+    return response
+      .cookie("access_token", res.token, {
+        httpOnly: true,
+        // expires: new Date(new Date().getTime() + 5 * 60 * 1000), //* 5 minute
+      })
+      .status(200)
+      .json(res.userInfo);
+  } catch (error) {
+    next(error);
   }
 };

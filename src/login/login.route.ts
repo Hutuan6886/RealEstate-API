@@ -10,3 +10,11 @@ loginRouter.post(
   body("password").isString(),
   LoginController.loginUser
 );
+
+loginRouter.post(
+  "/google",
+  body("userName").isString(),
+  body("email").isString(),
+  body("imgUrl").isString(),
+  LoginController.loginGoogle
+);
