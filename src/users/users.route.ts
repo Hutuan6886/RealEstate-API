@@ -1,8 +1,8 @@
 import express from "express";
 import * as UserController from "./users.controller";
+import { verifiUser } from "../utils/verifyUser";
 
-const userRouter = express.Router();
+export const userRouter = express.Router();
 
 userRouter.get("/", UserController.getUsers);
-
-userRouter.get("/:id", UserController.getUserId);
+userRouter.post("/update/:id", verifiUser, UserController.UpdateUserInfo);

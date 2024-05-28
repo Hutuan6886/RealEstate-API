@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { db } from "../utils/db.server";
 import bcrypt from "bcrypt";
 
-export type UserType = {
+export type UserLoginType = {
   id: string;
   userName: string;
   email: string;
@@ -10,15 +10,17 @@ export type UserType = {
   imgUrl: string;
 };
 
-export const loginUser = async (dataUser: Omit<UserType, "password">) => {
-  //*sử dụng Omit để lọc đi password của UserType
+export const loginUser = async (
+  dataUser: Omit<UserLoginType, "password" | "imgUrl">
+) => {
+  //*sử dụng Omit để lọc đi password vaf imgUrl của UserType
   //todo: create jwt (json web token)
   const token = jwt.sign({ id: dataUser.id }, process.env.JWT_SECRET as string); //* Create token with the id of user mix to JWT_SECRET (vì vậy từ token này, chúng ta có thể giải mã để lấy được id của user)
   return { token, dataUser };
 };
 
 export const googleUser = async (
-  dataUser: Omit<UserType, "id" | "password">
+  dataUser: Omit<UserLoginType, "id" | "password">
 ) => {
   //todo: Check user existing or not
   const existingUser = await db.user.findUnique({

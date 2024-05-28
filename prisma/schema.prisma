@@ -13,14 +13,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Gender {
+  Male
+  Female
+}
+
 model User {
   id       String   @id @default(cuid())
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 
-  userName      String
-  email         String    @unique
+  userName String
+  email    String  @unique
+  address  String?
+  phone    String?
+  gender   Gender?
+  birthday String?
+  imgUrl   String? @default("https://cdn.pixabay.com/photo/2016/08/31/11/54/icon-1633249_960_720.png")
+  password String
+
   emailVerified DateTime?
-  password      String
-  imgUrl        String?   @default("https://cdn.pixabay.com/photo/2016/08/31/11/54/icon-1633249_960_720.png")
 }
