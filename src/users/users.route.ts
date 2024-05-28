@@ -6,3 +6,8 @@ export const userRouter = express.Router();
 
 userRouter.get("/", UserController.getUsers);
 userRouter.post("/update/:id", verifiUser, UserController.UpdateUserInfo);
+userRouter.post(
+  "/update-oauth/:id",
+  verifiUser,
+  UserController.UpdateOauthUserInfo
+);

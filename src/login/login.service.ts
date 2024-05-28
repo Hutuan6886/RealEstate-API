@@ -8,10 +8,12 @@ export type UserLoginType = {
   email: string;
   password: string;
   imgUrl: string;
+  emailVerified: string;
+  provider: string;
 };
 
 export const loginUser = async (
-  dataUser: Omit<UserLoginType, "password" | "imgUrl">
+  dataUser: Omit<UserLoginType, "password" | "imgUrl" | "emailVerified">
 ) => {
   //*sử dụng Omit để lọc đi password vaf imgUrl của UserType
   //todo: create jwt (json web token)
@@ -40,6 +42,8 @@ export const googleUser = async (
         userName: dataUser.userName,
         email: dataUser.email,
         imgUrl: dataUser.imgUrl,
+        emailVerified: dataUser.emailVerified,
+        provider: dataUser.provider,
         password,
       },
     });

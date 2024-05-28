@@ -38,3 +38,21 @@ export const updateUser = async (dataUser: UserUpdateType, userId: string) => {
   });
   return userUpdated;
 };
+
+export const updateOauthUser = async (
+  dataUser: Omit<UserUpdateType, "newPassword" | "email">,
+  userId: string
+) => {
+  const userUpdated = await db.user.update({
+    where: { id: userId },
+    data: {
+      userName: dataUser.userName,
+      gender: dataUser.gender,
+      phone: dataUser.phone,
+      birthday: dataUser.birthday,
+      address: dataUser.address,
+      imgUrl: dataUser.imgUrl,
+    },
+  });
+  return userUpdated;
+};

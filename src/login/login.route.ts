@@ -16,5 +16,6 @@ loginRouter.post(
   body("userName").isString(),
   body("email").isString(),
   body("imgUrl").isString(),
+  body("emailVerified").isString(),
   LoginController.loginGoogle
 );

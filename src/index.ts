@@ -5,7 +5,6 @@ import { registerRouter } from "./register/register.route";
 import { loginRouter } from "./login/login.route";
 import { userRouter } from "./users/users.route";
 import cookieParser from "cookie-parser";
-import { verifiUser } from "./utils/verifyUser";
 
 dotenv.config();
 
@@ -27,7 +26,7 @@ app.listen(PORT, () => {
 //todo: ROUTES API
 app.use("/api/auth", registerRouter);
 app.use("/api/auth", loginRouter);
-app.use("/api/user", verifiUser, userRouter);
+app.use("/api/user", userRouter);
 
 //todo: MIDDLEWARE
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

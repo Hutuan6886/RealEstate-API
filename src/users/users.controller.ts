@@ -29,6 +29,7 @@ export const UpdateUserInfo = async (
   if (request.body.user.id !== request.params.id) {
     return next({ statusCode: 401, message: "This account is not available!" });
   }
+
   //todo: Check existingUser
   const existingUser = await db.user.findFirst({
     where: {
@@ -41,13 +42,13 @@ export const UpdateUserInfo = async (
 
   //todo: Check thông tin hiện tại và thông tin gửi lên có giống nhau k, nếu giống thì return
   if (
-    !!existingUser.userName === !!request.body.userName &&
-    !!existingUser.email === !!request.body.email &&
-    !!existingUser.phone === !!request.body.phone &&
-    !!existingUser.gender === !!request.body.gender &&
-    !!existingUser.address === !!request.body.address &&
-    !!existingUser.birthday === !!request.body.birthday &&
-    !!existingUser.imgUrl === !!request.body.imgUrl &&
+    existingUser.userName === request.body.userName &&
+    existingUser.email === request.body.email &&
+    existingUser.phone === request.body.phone &&
+    existingUser.gender === request.body.gender &&
+    existingUser.address === request.body.address &&
+    existingUser.birthday === request.body.birthday &&
+    existingUser.imgUrl === request.body.imgUrl &&
     !request.body.newPassword &&
     !request.body.reNewPassword
   ) {
@@ -81,6 +82,43 @@ export const UpdateUserInfo = async (
     );
     return response.status(200).json(userUpdated);
   } catch (error: any) {
+    return next(error);
+  }
+};
+
+export const UpdateOauthUserInfo = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+
+  //todo: Check validation
+  const validError = validationResult(request.body);
+  if (!validError.isEmpty()) {
+    return next(validError.array());
+  }
+
+  //todo: Check params id of user, có giống với id of user của user từ verifyUser gửi qua hay không
+  if (request.body.user.id !== request.params.id) {
+    return next({ statusCode: 401, message: "This account is not available!" });
+  }
+  
+  //todo: Check existingUser
+  const existingUser = await db.user.findFirst({
+    where: {
+      id: request.params.id,
+    },
+  });
+  if (!existingUser) {
+    return next({ statusCode: 400, message: "This account is not existing!" });
+  }
+  try {
+    const userUpdated = await UserService.updateOauthUser(
+      request.body,
+      request.params.id
+    );
+    return response.status(200).json(userUpdated);
+  } catch (error) {
     return next(error);
   }
 };
