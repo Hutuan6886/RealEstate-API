@@ -1,3 +1,4 @@
+import { User } from "@prisma/client";
 import { db } from "../utils/db.server";
 import bcrypt from "bcrypt";
 
@@ -12,7 +13,10 @@ export type UserUpdateType = {
   newPassword: string;
 };
 
-export const updateUser = async (dataUser: UserUpdateType, userId: string) => {
+export const updateUser = async (
+  dataUser: UserUpdateType,
+  userId: string
+): Promise<Omit<User, "password">> => {
   const passwordUpdated = bcrypt.hashSync(dataUser.newPassword, 10);
   if (dataUser.newPassword) {
     await db.user.update({
@@ -36,13 +40,15 @@ export const updateUser = async (dataUser: UserUpdateType, userId: string) => {
       imgUrl: dataUser.imgUrl,
     },
   });
-  return userUpdated;
+
+  const { password: deletePassword, ...userInfo } = userUpdated;
+  return userInfo;
 };
 
 export const updateOauthUser = async (
   dataUser: Omit<UserUpdateType, "newPassword" | "email">,
   userId: string
-) => {
+): Promise<Omit<User, "password">> => {
   const userUpdated = await db.user.update({
     where: { id: userId },
     data: {
@@ -54,5 +60,14 @@ export const updateOauthUser = async (
       imgUrl: dataUser.imgUrl,
     },
   });
-  return userUpdated;
+  const { password: deletePassword, ...userInfo } = userUpdated;
+  return userInfo;
+};
+
+export const deleteUser = async (id: string): Promise<void> => {
+  await db.user.delete({
+    where: {
+      id,
+    },
+  });
 };

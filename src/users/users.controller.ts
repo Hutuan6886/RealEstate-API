@@ -91,7 +91,6 @@ export const UpdateOauthUserInfo = async (
   response: Response,
   next: NextFunction
 ) => {
-
   //todo: Check validation
   const validError = validationResult(request.body);
   if (!validError.isEmpty()) {
@@ -102,7 +101,7 @@ export const UpdateOauthUserInfo = async (
   if (request.body.user.id !== request.params.id) {
     return next({ statusCode: 401, message: "This account is not available!" });
   }
-  
+
   //todo: Check existingUser
   const existingUser = await db.user.findFirst({
     where: {
@@ -118,6 +117,39 @@ export const UpdateOauthUserInfo = async (
       request.params.id
     );
     return response.status(200).json(userUpdated);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const DeleteUser = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  if (!request.params.id) {
+    return next({ statusCode: 400, message: "The params is not available!" });
+  }
+
+  //todo: Check xem token chứa request.body.user.id của verifiUser có tồn tại hay không (tồn tại đồng nghĩa với việc user đang được log in)
+  if (request.params.id !== request.body.user.id) {
+    return next({
+      statusCode: 400,
+      message: "The access_token is not existing!",
+    });
+  }
+
+  const existingUser = await db.user.findFirst({
+    where: {
+      id: request.params.id,
+    },
+  });
+  if (!existingUser) {
+    return next({ statusCode: 401, message: "The user is not existing!" });
+  }
+  try {
+    UserService.deleteUser(request.params.id);
+    return response.status(200).json({ message: "The user has been deleted." });
   } catch (error) {
     return next(error);
   }

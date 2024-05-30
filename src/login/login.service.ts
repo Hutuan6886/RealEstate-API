@@ -13,12 +13,13 @@ export type UserLoginType = {
 };
 
 export const loginUser = async (
-  dataUser: Omit<UserLoginType, "password" | "imgUrl" | "emailVerified">
+  dataUser: Omit<UserLoginType, "imgUrl" | "emailVerified">
 ) => {
-  //*sử dụng Omit để lọc đi password vaf imgUrl của UserType
+  const { password: deletePassword, ...userInfo } = dataUser;
   //todo: create jwt (json web token)
   const token = jwt.sign({ id: dataUser.id }, process.env.JWT_SECRET as string); //* Create token with the id of user mix to JWT_SECRET (vì vậy từ token này, chúng ta có thể giải mã để lấy được id của user)
-  return { token, dataUser };
+
+  return { token, userInfo };
 };
 
 export const googleUser = async (

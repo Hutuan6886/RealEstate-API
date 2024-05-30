@@ -46,7 +46,7 @@ export const loginUser = async (
         // expires: new Date(new Date().getTime() + 5 * 60 * 1000), //* 5 minute
       })
       .status(200)
-      .json(res.dataUser); //* gửi thông tin trừ password của user về browser
+      .json(res.userInfo); //* gửi thông tin trừ password của user về browser
   } catch (error: any) {
     // return Response.status(500).json(error.message);
     return next(error);

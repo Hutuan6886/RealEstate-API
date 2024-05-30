@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import { db } from "../utils/db.server";
+import { User } from "@prisma/client";
 
 type RegisterUserType = {
   userName: string;
@@ -12,15 +13,16 @@ type Annouce = {
 };
 export const createUser = async (
   user: Omit<RegisterUserType, "id">
-): Promise<RegisterUserType | Annouce> => {
+): Promise<Omit<User, "password"> | Annouce> => {
   //todo: create user
   const password = bcrypt.hashSync(user.password, 10);
   const userCreated = await db.user.create({
     data: {
       userName: user.userName,
       email: user.email,
-      password: bcrypt.hashSync(user.password, 10),
+      password,
     },
   });
-  return userCreated;
+  const { password: deletePassword, ...userInfo } = userCreated;
+  return userInfo;
 };

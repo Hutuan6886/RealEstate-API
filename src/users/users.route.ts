@@ -11,3 +11,4 @@ userRouter.post(
   verifiUser,
   UserController.UpdateOauthUserInfo
 );
+userRouter.delete("/delete/:id", verifiUser, UserController.DeleteUser);
