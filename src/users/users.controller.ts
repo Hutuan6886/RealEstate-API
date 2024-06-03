@@ -149,7 +149,10 @@ export const DeleteUser = async (
   }
   try {
     UserService.deleteUser(request.params.id);
-    return response.status(200).json({ message: "The user has been deleted." });
+    return response
+      .clearCookie("access_token")
+      .status(200)
+      .json({ message: "The user has been deleted." });
   } catch (error) {
     return next(error);
   }

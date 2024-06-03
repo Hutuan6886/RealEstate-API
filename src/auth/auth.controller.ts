@@ -1,8 +1,51 @@
-import { Request, Response, response } from "express";
+import { NextFunction, Request, Response, response } from "express";
 import { validationResult } from "express-validator";
 import { db } from "../utils/db.server";
-import * as LoginService from "./login.service";
+import * as AuthService from "./auth.service";
 import bcrypt from "bcrypt";
+
+export const registerUser = async (
+  request: Request,
+  Response: Response,
+  next: any
+) => {
+  const validError = validationResult(request);
+  if (!validError.isEmpty()) {
+    return Response.status(400).json(validError.array());
+  }
+
+  const { email, password, rePassword } = request.body;
+  //todo: Check existingUser
+  const existingUser = await db.user.findUnique({
+    where: {
+      email,
+    },
+  });
+  if (existingUser) {
+    // return Response.status(400).json({ error: "This email is existing!" });
+    return next({
+      statusCode: 401,
+      message: "This email is existing!",
+    });
+  }
+  //todo: Check password === rePassword
+  if (rePassword !== password) {
+    // return Response.status(400).json({
+    //   error: "This password and re-password are not match!",
+    // });
+    return next({
+      statusCode: 401,
+      message: "This password and re-password are not match!",
+    });
+  }
+  try {
+    const userCreated = await AuthService.createUser(request.body);
+    return Response.status(200).json(userCreated);
+  } catch (error: any) {
+    // return Response.status(500).json(error.message);
+    return next(error);
+  }
+};
 
 export const loginUser = async (
   request: Request,
@@ -38,7 +81,7 @@ export const loginUser = async (
      const token = jwt.sign({ id: dataUser.id }, process.env.JWT_SECRET); //* Create token with the id of user mix to JWT_SECRET (vì vậy từ token này, chúng ta có thể giải mã để lấy được id của user)
      const { password: pass, ...infoEXistingUser } = dataUser; //* Cần xoá mật khẩu của user trước khi gửi thông tin user đó về browser
     */
-    const res = await LoginService.loginUser(existingUser);
+    const res = await AuthService.loginUser(existingUser);
     return response
       .cookie("access_token", res.token, {
         //* Save this token at the cookie
@@ -63,7 +106,7 @@ export const loginGoogle = async (
     next(validError.array());
   }
   try {
-    const res = await LoginService.googleUser(request.body);
+    const res = await AuthService.googleUser(request.body);
     return response
       .cookie("access_token", res.token, {
         httpOnly: true,
@@ -73,5 +116,21 @@ export const loginGoogle = async (
       .json(res.userInfo);
   } catch (error) {
     next(error);
+  }
+};
+
+export const logoutUser = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  //todo: Sign-out là delete access_token của user
+  try {
+    return response
+      .clearCookie("access_token")
+      .status(200)
+      .json({ message: "Sign out successfully!" });
+  } catch (error) {
+    return next(error);
   }
 };

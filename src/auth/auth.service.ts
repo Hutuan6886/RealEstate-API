@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { db } from "../utils/db.server";
 import bcrypt from "bcrypt";
+import { User } from "@prisma/client";
 
 export type UserLoginType = {
   id: string;
@@ -10,6 +11,32 @@ export type UserLoginType = {
   imgUrl: string;
   emailVerified: string;
   provider: string;
+};
+
+type RegisterUserType = {
+  userName: string;
+  email: string;
+  password: string;
+};
+type Annouce = {
+  success?: string;
+  error?: string;
+};
+
+export const createUser = async (
+  user: Omit<RegisterUserType, "id">
+): Promise<Omit<User, "password"> | Annouce> => {
+  //todo: create user
+  const password = bcrypt.hashSync(user.password, 10);
+  const userCreated = await db.user.create({
+    data: {
+      userName: user.userName,
+      email: user.email,
+      password,
+    },
+  });
+  const { password: deletePassword, ...userInfo } = userCreated;
+  return userInfo;
 };
 
 export const loginUser = async (

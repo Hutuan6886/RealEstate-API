@@ -1,8 +1,7 @@
 import express, { NextFunction, Response, Request } from "express";
 import * as dotenv from "dotenv";
 import cors from "cors";
-import { registerRouter } from "./register/register.route";
-import { loginRouter } from "./login/login.route";
+import { authRouter } from "./auth/auth.route";
 import { userRouter } from "./users/users.route";
 import cookieParser from "cookie-parser";
 
@@ -24,8 +23,7 @@ app.listen(PORT, () => {
 });
 
 //todo: ROUTES API
-app.use("/api/auth", registerRouter);
-app.use("/api/auth", loginRouter);
+app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 
 //todo: MIDDLEWARE
