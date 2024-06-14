@@ -34,4 +34,45 @@ model User {
 
   provider      String    @default("credentials")
   emailVerified DateTime?
+
+  listing Listing[]
+}
+
+enum FormType {
+  Rent
+  Sell
+}
+
+enum HouseType {
+  Villa
+  DetachedHouse
+  SemiDetachedHouse
+  Duplex
+  Penthouse
+  Apartment
+  Studio
+}
+
+model Listing {
+  id       String   @id @default(cuid())
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+
+  name          String
+  description   String?
+  address       String
+  imgUrl        String[]
+  bedrooms      Int
+  bathrooms     Int
+  squaremetre   Int
+  regularPrice  Decimal
+  discountPrice Decimal?
+  furnished     Boolean?  @default(false)
+  offer         Boolean?  @default(false)
+  parking       Boolean?  @default(false)
+  formType      FormType
+  houseType     HouseType
+
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 }

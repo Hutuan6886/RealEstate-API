@@ -4,6 +4,7 @@ import cors from "cors";
 import { authRouter } from "./auth/auth.route";
 import { userRouter } from "./users/users.route";
 import cookieParser from "cookie-parser";
+import { listingRouter } from "./listing/listing.route";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.listen(PORT, () => {
 //todo: ROUTES API
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
+app.use("/api/listing", listingRouter);
 
 //todo: MIDDLEWARE
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
