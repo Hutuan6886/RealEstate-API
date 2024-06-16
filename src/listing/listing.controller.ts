@@ -50,3 +50,67 @@ export const createListing = async (
     return next(error);
   }
 };
+
+export const getListingUser = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  //todo: Check access_token and params userId
+  if (!request.params.id) {
+    return next({
+      statusCode: 400,
+      message: "The params is not a vailable!",
+    });
+  }
+  if (!request.body.user.id) {
+    return next({
+      statusCode: 400,
+      message: "The access_token is not existing!",
+    });
+  }
+  if (request.params.id !== request.body.user.id) {
+    return next({ statusCode: 400, message: "The access_token is invalid!" });
+  }
+  try {
+    const listingList = await db.listing.findMany({
+      where: {
+        userId: request.body.user.id,
+      },
+    });
+    return response.status(200).json(listingList);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const deleteListingUser = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+
+  if (!request.params.id) {
+    return next({
+      statusCode: 400,
+      message: "The params is not a vailable!",
+    });
+  }
+  if (!request.body.user.id) {
+    return next({
+      statusCode: 400,
+      message: "The access_token is not existing!",
+    });
+  }
+  try {
+    const listingDeleted = await db.listing.delete({
+      where: {
+        id: request.params.id,
+        userId: request.body.user.id,
+      },
+    });
+    return response.status(200).json(listingDeleted);
+  } catch (error) {
+    return next(error);
+  }
+};
