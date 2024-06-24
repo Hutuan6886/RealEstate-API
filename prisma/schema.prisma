@@ -53,6 +53,13 @@ enum HouseType {
   Studio
 }
 
+// model ImageUpload {
+//   id        String   @id @default(cuid())
+//   name      String
+//   Listing   Listing? @relation(fields: [listingId], references: [id], onDelete: Cascade)
+//   listingId String?
+// }
+
 model Listing {
   id       String   @id @default(cuid())
   createAt DateTime @default(now())
@@ -61,7 +68,7 @@ model Listing {
   name          String
   description   String?
   address       String
-  imgUrl        String[]
+  imgUrl        String[] //ImageUpload[]
   bedrooms      Int
   bathrooms     Int
   squaremetre   Int

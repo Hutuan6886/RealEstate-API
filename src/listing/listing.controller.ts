@@ -57,7 +57,7 @@ export const getListingUser = async (
   next: NextFunction
 ) => {
   //todo: Check access_token and params userId
-  if (!request.params.id) {
+  if (!request.params.userId) {
     return next({
       statusCode: 400,
       message: "The params is not a vailable!",
@@ -69,7 +69,7 @@ export const getListingUser = async (
       message: "The access_token is not existing!",
     });
   }
-  if (request.params.id !== request.body.user.id) {
+  if (request.params.userId !== request.body.user.id) {
     return next({ statusCode: 400, message: "The access_token is invalid!" });
   }
   try {
@@ -89,8 +89,7 @@ export const deleteListingUser = async (
   response: Response,
   next: NextFunction
 ) => {
-
-  if (!request.params.id) {
+  if (!request.params.listingId) {
     return next({
       statusCode: 400,
       message: "The params is not a vailable!",
@@ -105,11 +104,140 @@ export const deleteListingUser = async (
   try {
     const listingDeleted = await db.listing.delete({
       where: {
-        id: request.params.id,
+        id: request.params.listingId,
         userId: request.body.user.id,
       },
     });
     return response.status(200).json(listingDeleted);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getListingItem = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  if (!request.params.listingId) {
+    return next({ statusCode: 400, message: "The params is unavailable!" });
+  }
+  if (!request.body.user.id) {
+    return next({
+      statusCode: 400,
+      message: "The access_token is not existing!",
+    });
+  }
+  try {
+    const listingItem = await db.listing.findFirst({
+      where: {
+        id: request.params.listingId,
+        userId: request.body.id,
+      },
+    });
+    return response.status(200).json(listingItem);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const updateListingItem = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  const validError = validationResult(request.body);
+  if (!validError.isEmpty()) {
+    return next(validError.array());
+  }
+  if (!request.params.listingId) {
+    return next({ statusCode: 400, message: "The params is unavailable!" });
+  }
+  if (request.params.listingId !== request.body.id) {
+    return next({ statusCode: 401, message: "The listing is invalid!" });
+  }
+  if (!request.body.user.id) {
+    return next({
+      statusCode: 400,
+      message: "The access_token is not existing!",
+    });
+  }
+  const existingListing = await db.listing.findFirst({
+    where: {
+      id: request.params.listingId,
+      userId: request.body.user.id,
+    },
+  });
+  if (!existingListing) {
+    return next({ statusCode: 401, message: "Listing item is not existing!" });
+  }
+  try {
+    const listingUpdated = await db.listing.update({
+      where: {
+        id: existingListing.id,
+        userId: existingListing?.userId,
+      },
+      data: {
+        name: request.body.name,
+        address: request.body.address,
+        description: request.body.description,
+        imgUrl: request.body.imgUrl,
+        bedrooms: request.body.bedrooms,
+        bathrooms: request.body.bathrooms,
+        formType: request.body.formType,
+        houseType: request.body.houseType,
+        furnished: request.body.furnished,
+        parking: request.body.parking,
+        offer: request.body.offer,
+        squaremetre: request.body.squaremetre,
+        regularPrice: request.body.regularPrice,
+        discountPrice: request.body.discountPrice,
+      },
+    });
+    return response.status(200).json(listingUpdated);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const deleteListingImage = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  const validError = validationResult(request.body);
+  if (!validError.isEmpty()) {
+    return next(validError.array());
+  }
+  if (!request.body.user.id) {
+    return next({
+      statusCode: 400,
+      message: "The access_token is not existing!",
+    });
+  }
+  const existingListing = await db.listing.findFirst({
+    where: {
+      id: request.params.listingId,
+      userId: request.body.user.id,
+    },
+  });
+  if (!existingListing) {
+    return next({ statusCode: 401, message: "Listing item is not existing!" });
+  }
+  const imgUrl = existingListing.imgUrl.filter(
+    (img) => img !== request.body.imgUrl
+  );
+  try {
+    const listingItem = await db.listing.update({
+      where: {
+        id: existingListing.id,
+        userId: existingListing?.userId,
+      },
+      data: {
+        imgUrl: [...imgUrl],
+      },
+    });
+    return response.status(200).json(listingItem);
   } catch (error) {
     return next(error);
   }
