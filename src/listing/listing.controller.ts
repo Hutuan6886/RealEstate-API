@@ -242,3 +242,60 @@ export const deleteListingImage = async (
     return next(error);
   }
 };
+
+export const getListingContent = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  if (!request.params.listingId) {
+    return next({ statusCode: 400, message: "Forbidden!" });
+  }
+  try {
+    const dataListing = await db.listing.findFirst({
+      where: {
+        id: request.params.listingId,
+      },
+    });
+    return response.status(200).json(dataListing);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getInfoLandlordByListingId = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  if (!request.params.listingId) {
+    return next({ statusCode: 400, message: "Forbidden!" });
+  }
+  const existingListing = await db.listing.findFirst({
+    where: {
+      id: request.params.listingId,
+    },
+  });
+  if (!existingListing) {
+    return next({ statusCode: 401, message: "The listing is not exist!" });
+  }
+  try {
+    const dataLandlord = await db.user.findFirst({
+      where: {
+        id: existingListing.userId,
+      },
+    });
+    if (!dataLandlord) {
+      return next({ statusCode: 401, message: "The Landlord is not exist!" });
+    }
+    return response
+      .status(200)
+      .json({
+        name: dataLandlord.userName,
+        email: dataLandlord.email,
+        phone: dataLandlord.phone,
+      });
+  } catch (error) {
+    return next();
+  }
+};

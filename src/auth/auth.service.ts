@@ -44,9 +44,18 @@ export const loginUser = async (
 ) => {
   const { password: deletePassword, ...userInfo } = dataUser;
   //todo: create jwt (json web token)
-  const token = jwt.sign({ id: dataUser.id }, process.env.JWT_SECRET as string); //* Create token with the id of user mix to JWT_SECRET (vì vậy từ token này, chúng ta có thể giải mã để lấy được id của user)
+  const access_token =
+    process.env.JWT_SECRET &&
+    jwt.sign({ id: dataUser.id }, process.env.JWT_SECRET); //* Create token with the id of user mix to JWT_SECRET (vì vậy từ token này, chúng ta có thể giải mã để lấy được id của user)
 
-  return { token, userInfo };
+  const refresh_token =
+    process.env.JWT_SECRET &&
+    jwt.sign(
+      { id: dataUser.id, email: dataUser.email },
+      process.env.JWT_SECRET
+    ); //* Create token with the id of user mix to JWT_SECRET (vì vậy từ token này, chúng ta có thể giải mã để lấy được id của user)
+
+  return { access_token, refresh_token, userInfo };
 };
 
 export const googleUser = async (
