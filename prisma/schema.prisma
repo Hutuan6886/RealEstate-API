@@ -5,7 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"] //* for search bar
 }
 
 datasource db {
@@ -35,22 +36,14 @@ model User {
   provider      String    @default("credentials")
   emailVerified DateTime?
 
+  savedHomes String[]
+
   listing Listing[]
 }
 
 enum FormType {
   Rent
   Sell
-}
-
-enum HouseType {
-  Villa
-  DetachedHouse
-  SemiDetachedHouse
-  Duplex
-  Penthouse
-  Apartment
-  Studio
 }
 
 // model ImageUpload {
@@ -68,18 +61,26 @@ model Listing {
   name          String
   description   String?
   address       String
+  location      Location?
   imgUrl        String[] //ImageUpload[]
   bedrooms      Int
   bathrooms     Int
-  squaremetre   Int
+  squaremetre   Decimal
   regularPrice  Decimal
   discountPrice Decimal?
   furnished     Boolean?  @default(false)
   offer         Boolean?  @default(false)
   parking       Boolean?  @default(false)
   formType      FormType
-  houseType     HouseType
+  houseType     String
+  User          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+}
 
-  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+model Location {
+  id        String  @id @default(cuid())
+  latitude  String
+  longitude String
+  Listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String  @unique
 }

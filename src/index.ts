@@ -6,6 +6,7 @@ import { userRouter } from "./users/users.route";
 import cookieParser from "cookie-parser";
 import { listingRouter } from "./listing/listing.route";
 import { tokenRouter } from "./token/token.router";
+import { saveRouter } from "./save/save.router";
 
 dotenv.config();
 
@@ -25,10 +26,11 @@ app.listen(PORT, () => {
 });
 
 //todo: ROUTES API
-app.use("/api/auth", authRouter);
-app.use("/api/user", userRouter);
-app.use("/api/listing", listingRouter);
-app.use("/api/token", tokenRouter);
+app.use("/api/auth", authRouter); //todo: User's auth
+app.use("/api/user", userRouter); //todo: User's info
+app.use("/api/listing", listingRouter); //todo: User's listing
+app.use("/api/token", tokenRouter); //todo: User's token
+app.use("/api/save", saveRouter); //todo: User's save
 
 //todo: MIDDLEWARE
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

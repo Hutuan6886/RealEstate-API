@@ -52,3 +52,8 @@ listingRouter.get(
   "/get-listing-landlord/:listingId",
   ListingController.getInfoLandlordByListingId
 );
+listingRouter.get("/search", ListingController.getSearchListing);
+
+listingRouter.get("/get-all-listing", ListingController.getAllListing);
+
+listingRouter.get("/get-all-listing-name", ListingController.getAllListingName);

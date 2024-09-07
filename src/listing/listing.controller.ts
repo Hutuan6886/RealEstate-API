@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { db } from "../utils/db.server";
+import { FormType } from "@prisma/client";
 
 export const createListing = async (
   request: Request,
@@ -31,6 +32,12 @@ export const createListing = async (
         name: request.body.name,
         description: request.body.description,
         address: request.body.address,
+        location: {
+          create: {
+            latitude: request.body.location.latitude,
+            longitude: request.body.location.longitude,
+          },
+        },
         imgUrl: request.body.imgUrl,
         bedrooms: parseInt(request.body.bedrooms),
         bathrooms: parseInt(request.body.bathrooms),
@@ -288,14 +295,205 @@ export const getInfoLandlordByListingId = async (
     if (!dataLandlord) {
       return next({ statusCode: 401, message: "The Landlord is not exist!" });
     }
-    return response
-      .status(200)
-      .json({
-        name: dataLandlord.userName,
-        email: dataLandlord.email,
-        phone: dataLandlord.phone,
-      });
+    return response.status(200).json({
+      name: dataLandlord.userName,
+      email: dataLandlord.email,
+      phone: dataLandlord.phone,
+    });
   } catch (error) {
     return next();
+  }
+};
+
+export const getSearchListing = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const searchTerm: string | undefined = request.query.searchTerm?.toString();
+    let isFurnished: boolean | undefined = undefined;
+    let isParking: boolean | undefined = undefined;
+    let isOffer: boolean | undefined = undefined;
+    let beds: number | undefined = undefined;
+    let baths: number | undefined = undefined;
+    let formType: FormType = "Sell";
+
+    //todo: Convert giá trị price thành rawValue (price gửi từ client là 100,000 -> PC sẽ chỉ hiểu giá trị là 100 -> xoá dấu comma)
+    let priceMin: string | undefined = request.query.priceMin
+      ?.toString()
+      .split(",")
+      .join("");
+    let priceMax: string | undefined = request.query.priceMax
+      ?.toString()
+      .split(",")
+      .join("");
+
+    let houseTypeList: string[] | undefined = request.query.houseType
+      ?.toString()
+      .split(",");
+
+    let squarefeetMin: number | undefined = parseFloat(
+      request.query.squarefeetMin as string
+    );
+    let squarefeetMax: number | undefined = parseFloat(
+      request.query.squarefeetMax as string
+    );
+
+    if (request.query.keywords) {
+      const keywords = (request.query.keywords as string).split(",");
+      if (keywords.includes("furnished")) {
+        isFurnished = true;
+      }
+      if (keywords.includes("parking")) {
+        isParking = true;
+      }
+      if (keywords.includes("offer")) {
+        isOffer = true;
+      }
+    }
+    if (request.query.beds && request.query.beds !== "0") {
+      beds = parseInt(request.query.beds as string);
+    }
+    if (request.query.baths && request.query.baths !== "0") {
+      baths = parseInt(request.query.baths as string);
+    }
+    if (!priceMin || priceMin === "0") {
+      priceMin = undefined;
+    }
+    if (!priceMax || priceMax === "0") {
+      priceMax = undefined;
+    }
+    if (request.query.formType === "Rent") {
+      formType = "Rent";
+    }
+    if (houseTypeList?.length === 1) {
+      houseTypeList = undefined;
+    }
+    if (!squarefeetMin) {
+      squarefeetMin = undefined;
+    }
+    if (!squarefeetMax) {
+      squarefeetMax = undefined;
+    }
+
+    if (!searchTerm) {
+      const listingSearched = await db.listing.findMany({
+        where: {
+          formType,
+          bedrooms: beds,
+          bathrooms: baths,
+          furnished: isFurnished,
+          parking: isParking,
+          offer: isOffer,
+          regularPrice: {
+            gte: priceMin,
+            lte: priceMax,
+          },
+          squaremetre: {
+            gte: squarefeetMin,
+            lte: squarefeetMax,
+          },
+          houseType: {
+            in: houseTypeList,
+          },
+        },
+        include: {
+          location: true,
+        },
+        orderBy: {
+          createAt: "desc",
+        },
+      });
+      return response.status(200).json(listingSearched);
+    }
+
+    const listingSearched = await db.listing.findMany({
+      where: {
+        OR: [
+          {
+            name: {
+              contains: searchTerm,
+            },
+          },
+          {
+            address: {
+              contains: searchTerm,
+            },
+          },
+        ],
+        formType,
+        bedrooms: beds,
+        bathrooms: baths,
+        furnished: isFurnished,
+        parking: isParking,
+        offer: isOffer,
+        regularPrice: {
+          gte: priceMin,
+          lte: priceMax,
+        },
+        squaremetre: {
+          gte: squarefeetMin,
+          lte: squarefeetMax,
+        },
+        houseType: {
+          in: houseTypeList,
+        },
+      },
+      include: {
+        location: true,
+      },
+      orderBy: {
+        createAt: "desc",
+      },
+    });
+
+    return response.status(200).json(listingSearched);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getAllListing = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const allListing = await db.listing.findMany({
+      include: {
+        location: true,
+        User: true,
+      },
+    });
+    return response.status(200).json(allListing);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getAllListingName = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const allListingName = await db.listing.findMany({
+      select: {
+        name: true,
+      },
+    });
+    let listingNameData: string[] = allListingName.map((listing) => {
+      //* Biến đổi giá trị dầu ra thành string[]
+      return listing.name;
+    });
+
+    listingNameData = listingNameData.filter(
+      //* Lọc các giá trị giống nhau trong mảng
+      (item, i) => listingNameData.indexOf(item) === i
+    );
+    return response.status(200).json(listingNameData);
+  } catch (error) {
+    return next(error);
   }
 };
