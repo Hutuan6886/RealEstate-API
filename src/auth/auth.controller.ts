@@ -61,6 +61,14 @@ export const loginUser = async (
     where: {
       email,
     },
+    include: {
+      listing: {
+        include: {
+          address: true,
+          location: true,
+        },
+      },
+    },
   });
   if (!existingUser) {
     // return Response.status(404).json({error:'This email is not existing!'})

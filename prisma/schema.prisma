@@ -58,11 +58,11 @@ model Listing {
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 
-  name          String
-  description   String?
-  address       String
+  name        String
+  description String?
+
   location      Location?
-  imgUrl        String[] //ImageUpload[]
+  imgUrl        String[] 
   bedrooms      Int
   bathrooms     Int
   squaremetre   Decimal
@@ -71,10 +71,25 @@ model Listing {
   furnished     Boolean?  @default(false)
   offer         Boolean?  @default(false)
   parking       Boolean?  @default(false)
+  amenities     String[]
   formType      FormType
   houseType     String
-  User          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String
+
+  address   Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  addressId String
+
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+}
+
+model Address {
+  id       String    @id @default(cuid())
+  number   String
+  street   String
+  ward     String
+  district String
+  city     String
+  Listing  Listing[]
 }
 
 model Location {

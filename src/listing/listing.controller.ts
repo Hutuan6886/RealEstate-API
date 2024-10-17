@@ -26,12 +26,68 @@ export const createListing = async (
     return next({ stausCode: 401, message: "User is not available!" });
   }
 
+  //todo: Check Address existing
+  const existingAddress = await db.address.findFirst({
+    where: {
+      number: request.body.address.number,
+      street: request.body.address.street,
+      ward: request.body.address.ward,
+      district: request.body.address.district,
+      city: request.body.address.city,
+    },
+  });
   try {
+    if (!existingAddress) {
+      const newAddress = await db.address.create({
+        data: {
+          number: request.body.address.number,
+          street: request.body.address.street,
+          ward: request.body.address.ward,
+          district: request.body.address.district,
+          city: request.body.address.city,
+        },
+      });
+      const listingCreated = await db.listing.create({
+        data: {
+          name: request.body.name,
+          description: request.body.description,
+          addressId: newAddress.id,
+          userId: request.body.userId,
+          location: {
+            create: {
+              latitude: request.body.location.latitude,
+              longitude: request.body.location.longitude,
+            },
+          },
+          imgUrl: request.body.imgUrl,
+          bedrooms: parseInt(request.body.bedrooms),
+          bathrooms: parseInt(request.body.bathrooms),
+          squaremetre: parseFloat(request.body.squaremetre),
+          furnished: request.body.furnished,
+          parking: request.body.parking,
+          offer: request.body.offer,
+          formType: request.body.formType,
+          houseType: request.body.houseType,
+          regularPrice: Number(
+            request.body.regularPrice.toString().split(".").join("")
+          ), //* Bỏ dấu chấm trong number ,Convert value string with dot to number
+          discountPrice: Number(
+            request.body.regularPrice.toString().split(".").join("")
+          ), //* Bỏ dấu chấm trong number ,Convert value string with dot to numbernumber
+        },
+        include: {
+          address: true,
+          location: true,
+        },
+      });
+      return response.status(200).json(listingCreated);
+    }
     const listingCreated = await db.listing.create({
       data: {
         name: request.body.name,
         description: request.body.description,
-        address: request.body.address,
+        addressId: existingAddress.id,
+        userId: request.body.userId,
         location: {
           create: {
             latitude: request.body.location.latitude,
@@ -45,47 +101,25 @@ export const createListing = async (
         furnished: request.body.furnished,
         parking: request.body.parking,
         offer: request.body.offer,
+        amenities: request.body.amenities,
         formType: request.body.formType,
         houseType: request.body.houseType,
-        regularPrice: parseFloat(request.body.regularPrice),
-        discountPrice: parseFloat(request.body.discountPrice),
-        userId: request.body.userId,
+        // regularPrice: Number(request.body.regularPrice.replace(/,/g, "")), //* replace dấu phẩy của currency input và convert string to number
+        // discountPrice: Number(request.body.discountPrice.replace(/,/g, "")), //* replace dấu phẩy của currency input và convert string to number
+        regularPrice: Number(
+          request.body.regularPrice.toString().split(".").join("")
+        ), //* Bỏ dấu chấm trong number ,Convert value string with dot to number
+        discountPrice: Number(
+          request.body.regularPrice.toString().split(".").join("")
+        ), //* Bỏ dấu chấm trong number ,Convert value string with dot to number
+      },
+      include: {
+        address: true,
+        location: true,
       },
     });
+    console.log("listingCreated", listingCreated);
     return response.status(200).json(listingCreated);
-  } catch (error) {
-    return next(error);
-  }
-};
-
-export const getListingUser = async (
-  request: Request,
-  response: Response,
-  next: NextFunction
-) => {
-  //todo: Check access_token and params userId
-  if (!request.params.userId) {
-    return next({
-      statusCode: 400,
-      message: "The params is not a vailable!",
-    });
-  }
-  if (!request.body.user.id) {
-    return next({
-      statusCode: 400,
-      message: "The access_token is not existing!",
-    });
-  }
-  if (request.params.userId !== request.body.user.id) {
-    return next({ statusCode: 400, message: "The access_token is invalid!" });
-  }
-  try {
-    const listingList = await db.listing.findMany({
-      where: {
-        userId: request.body.user.id,
-      },
-    });
-    return response.status(200).json(listingList);
   } catch (error) {
     return next(error);
   }
@@ -141,6 +175,10 @@ export const getListingItem = async (
         id: request.params.listingId,
         userId: request.body.id,
       },
+      include: {
+        location: true,
+        address: true,
+      },
     });
     return response.status(200).json(listingItem);
   } catch (error) {
@@ -178,6 +216,7 @@ export const updateListingItem = async (
   if (!existingListing) {
     return next({ statusCode: 401, message: "Listing item is not existing!" });
   }
+
   try {
     const listingUpdated = await db.listing.update({
       where: {
@@ -186,8 +225,22 @@ export const updateListingItem = async (
       },
       data: {
         name: request.body.name,
-        address: request.body.address,
         description: request.body.description,
+        address: {
+          update: {
+            number: request.body.address.number,
+            street: request.body.address.street,
+            ward: request.body.address.ward,
+            district: request.body.address.district,
+            city: request.body.address.city,
+          },
+        },
+        location: {
+          update: {
+            latitude: request.body.location.latitude,
+            longitude: request.body.location.longitude,
+          },
+        },
         imgUrl: request.body.imgUrl,
         bedrooms: request.body.bedrooms,
         bathrooms: request.body.bathrooms,
@@ -196,9 +249,18 @@ export const updateListingItem = async (
         furnished: request.body.furnished,
         parking: request.body.parking,
         offer: request.body.offer,
+        amenities: request.body.amenities,
         squaremetre: request.body.squaremetre,
-        regularPrice: request.body.regularPrice,
-        discountPrice: request.body.discountPrice,
+        regularPrice: Number(
+          request.body.regularPrice.toString().split(".").join("")
+        ), //* Bỏ dấu chấm trong number ,Convert value string with dot to number
+        discountPrice: Number(
+          request.body.discountPrice.toString().split(".").join("")
+        ), //* Bỏ dấu chấm trong number ,Convert value string with dot to number
+      },
+      include: {
+        address: true,
+        location: true,
       },
     });
     return response.status(200).json(listingUpdated);
@@ -263,6 +325,10 @@ export const getListingContent = async (
       where: {
         id: request.params.listingId,
       },
+      include: {
+        address: true,
+        location: true,
+      },
     });
     return response.status(200).json(dataListing);
   } catch (error) {
@@ -319,14 +385,14 @@ export const getSearchListing = async (
     let baths: number | undefined = undefined;
     let formType: FormType = "Sell";
 
-    //todo: Convert giá trị price thành rawValue (price gửi từ client là 100,000 -> PC sẽ chỉ hiểu giá trị là 100 -> xoá dấu comma)
+    //todo: Convert giá trị price thành rawValue (price gửi từ client là 100.000 -> PC sẽ chỉ hiểu giá trị là 100 -> xoá dấu dot hoặc comma)
     let priceMin: string | undefined = request.query.priceMin
       ?.toString()
-      .split(",")
+      .split(".")
       .join("");
     let priceMax: string | undefined = request.query.priceMax
       ?.toString()
-      .split(",")
+      .split(".")
       .join("");
 
     let houseTypeList: string[] | undefined = request.query.houseType
@@ -399,6 +465,7 @@ export const getSearchListing = async (
           },
         },
         include: {
+          address: true,
           location: true,
         },
         orderBy: {
@@ -418,7 +485,9 @@ export const getSearchListing = async (
           },
           {
             address: {
-              contains: searchTerm,
+              city: {
+                contains: searchTerm,
+              },
             },
           },
         ],
@@ -441,12 +510,15 @@ export const getSearchListing = async (
         },
       },
       include: {
+        address: true,
         location: true,
       },
       orderBy: {
         createAt: "desc",
       },
     });
+
+    console.log("listingSearched", listingSearched);
 
     return response.status(200).json(listingSearched);
   } catch (error) {
@@ -462,11 +534,65 @@ export const getAllListing = async (
   try {
     const allListing = await db.listing.findMany({
       include: {
+        address: true,
         location: true,
         User: true,
       },
     });
     return response.status(200).json(allListing);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getNewlyListing = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const newLyListing = await db.listing.findMany({
+      include: {
+        address: true,
+        location: true,
+        User: true,
+      },
+      orderBy: {
+        createAt: "desc",
+      },
+      take: 20,
+    });
+    return response.status(200).json(newLyListing);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getHcmListing = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const hcmListing = await db.listing.findMany({
+      where: {
+        address: {
+          city: {
+            contains: "Hồ Chí Minh",
+          },
+        },
+      },
+      include: {
+        address: true,
+        location: true,
+        User: true,
+      },
+      orderBy: {
+        createAt: "desc",
+      },
+      take: 20,
+    });
+    return response.status(200).json(hcmListing);
   } catch (error) {
     return next(error);
   }
