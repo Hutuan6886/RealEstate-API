@@ -72,7 +72,7 @@ export const createListing = async (
             request.body.regularPrice.toString().split(".").join("")
           ), //* Bỏ dấu chấm trong number ,Convert value string with dot to number
           discountPrice: Number(
-            request.body.regularPrice.toString().split(".").join("")
+            request.body.discountPrice.toString().split(".").join("")
           ), //* Bỏ dấu chấm trong number ,Convert value string with dot to numbernumber
         },
         include: {
@@ -110,7 +110,7 @@ export const createListing = async (
           request.body.regularPrice.toString().split(".").join("")
         ), //* Bỏ dấu chấm trong number ,Convert value string with dot to number
         discountPrice: Number(
-          request.body.regularPrice.toString().split(".").join("")
+          request.body.discountPrice.toString().split(".").join("")
         ), //* Bỏ dấu chấm trong number ,Convert value string with dot to number
       },
       include: {
@@ -118,7 +118,6 @@ export const createListing = async (
         location: true,
       },
     });
-    console.log("listingCreated", listingCreated);
     return response.status(200).json(listingCreated);
   } catch (error) {
     return next(error);
