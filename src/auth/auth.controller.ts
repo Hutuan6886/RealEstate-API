@@ -95,18 +95,21 @@ export const loginUser = async (
       .cookie("access_token", res.access_token, {
         //* Save this token at the cookie
         httpOnly: true,
+        domain: undefined,
         secure: true,
+        sameSite: "none",
         expires: new Date(new Date().getTime() + 1 * 60 * 1000), //* Access_token 1 minute
       })
       .cookie("refresh_token", res.refresh_token, {
         httpOnly: true,
+        domain: undefined,
         secure: true,
+        sameSite: "none",
         expires: new Date(new Date().getTime() + 10 * 24 * 60 * 60 * 1000), //* 10 day
       })
       .status(200)
       .json(res.userInfo); //* gửi thông tin trừ password của user về browser
   } catch (error: any) {
-    // return Response.status(500).json(error.message);
     return next(error);
   }
 };

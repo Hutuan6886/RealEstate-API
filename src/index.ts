@@ -1,9 +1,10 @@
 import express, { NextFunction, Response, Request } from "express";
 import * as dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+
 import { authRouter } from "./auth/auth.route";
 import { userRouter } from "./users/users.route";
-import cookieParser from "cookie-parser";
 import { listingRouter } from "./listing/listing.route";
 import { tokenRouter } from "./token/token.router";
 import { saveRouter } from "./save/save.router";
@@ -16,11 +17,22 @@ if (!process.env.PORT) {
 
 const PORT = process.env.PORT;
 
+//todo:CONFIG APP
 const app = express();
-app.use(cors());
+
+//todo: CONFIG LIBS
+app.use(
+  cors({
+    origin: process.env.CLIENT_ROUTE,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+    allowedHeaders:['Content-Type','Authorization']
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
+//todo: READY
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });

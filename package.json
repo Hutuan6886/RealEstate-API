@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "prisma": {
+    "seed": "node --require esbuild-register prisma/seedData/seed.ts"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.ts"
@@ -15,12 +18,13 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
+    "express": "^4.21.1",
     "express-validator": "^7.0.1",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "react-dev-utils": "^10.0.0"
   },
   "devDependencies": {
-    "@prisma/client": "^5.14.0",
+    "@prisma/client": "^5.21.1",
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.7",
     "@types/cors": "^2.8.17",
@@ -30,7 +34,8 @@
     "@types/node": "^20.12.12",
     "esbuild-register": "^3.5.0",
     "nodemon": "^3.1.0",
-    "prisma": "^5.14.0",
-    "typescript": "^5.4.5"
+    "prisma": "^5.21.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
   }
 }

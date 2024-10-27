@@ -8,6 +8,9 @@ export const reNewToken = async (
 ) => {
   const access_token = request.cookies.access_token;
   const refresh_token = request.cookies.refresh_token;
+  console.log("access_token",access_token);
+  console.log("refresh_token",refresh_token);
+  
 
   process.env.JWT_SECRET &&
     jwt.verify(

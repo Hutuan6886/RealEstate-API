@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { db } from "../utils/db.server";
-import { FormType } from "@prisma/client";
+import { FormType } from "../../types/types";
 
 export const createListing = async (
   request: Request,
@@ -382,7 +382,8 @@ export const getSearchListing = async (
     let isOffer: boolean | undefined = undefined;
     let beds: number | undefined = undefined;
     let baths: number | undefined = undefined;
-    let formType: FormType = "Sell";
+    let formType: string = "Sell";
+    // let formType: keyof typeof FormType = "Sell";
 
     //todo: Convert giá trị price thành rawValue (price gửi từ client là 100.000 -> PC sẽ chỉ hiểu giá trị là 100 -> xoá dấu dot hoặc comma)
     let priceMin: string | undefined = request.query.priceMin
@@ -430,7 +431,7 @@ export const getSearchListing = async (
       priceMax = undefined;
     }
     if (request.query.formType === "Rent") {
-      formType = "Rent";
+      formType = request.query.formType;
     }
     if (houseTypeList?.length === 1) {
       houseTypeList = undefined;

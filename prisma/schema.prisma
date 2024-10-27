@@ -9,6 +9,7 @@ generator client {
   previewFeatures = ["fullTextSearch", "fullTextIndex"] //* for search bar
 }
 
+//todo: NEON db
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -28,7 +29,7 @@ model User {
   email    String  @unique
   address  String?
   phone    String?
-  gender   Gender? 
+  gender   Gender?
   birthday String?
   imgUrl   String? @default("https://cdn.pixabay.com/photo/2016/08/31/11/54/icon-1633249_960_720.png")
   password String
@@ -46,13 +47,6 @@ enum FormType {
   Sell
 }
 
-// model ImageUpload {
-//   id        String   @id @default(cuid())
-//   name      String
-//   Listing   Listing? @relation(fields: [listingId], references: [id], onDelete: Cascade)
-//   listingId String?
-// }
-
 model Listing {
   id       String   @id @default(cuid())
   createAt DateTime @default(now())
@@ -62,7 +56,7 @@ model Listing {
   description String?
 
   location      Location?
-  imgUrl        String[] 
+  imgUrl        String[]
   bedrooms      Int
   bathrooms     Int
   squaremetre   Decimal
@@ -72,7 +66,7 @@ model Listing {
   offer         Boolean?  @default(false)
   parking       Boolean?  @default(false)
   amenities     String[]
-  formType      FormType
+  formType      String
   houseType     String
 
   address   Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
