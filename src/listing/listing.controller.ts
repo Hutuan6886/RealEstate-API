@@ -66,6 +66,7 @@ export const createListing = async (
           furnished: request.body.furnished,
           parking: request.body.parking,
           offer: request.body.offer,
+          amenities: request.body.amenities,
           formType: request.body.formType,
           houseType: request.body.houseType,
           regularPrice: Number(
